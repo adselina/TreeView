@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -13,13 +14,14 @@ namespace TreeView
 {
     public partial class Form1 : Form
     {
-        
-        const string connectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres;Password=kakdela";
+        private readonly string connectionString = ConfigurationManager.AppSettings.Get("connectionString").ToString();
+        //const string connectionString = "Host=localhost;Port=5432;Database=postgres;Username=postgres";
         public Form1()
         {
             InitializeComponent();
             add.Enabled = false;
             update.Enabled = false;
+            dataGridView1.Enabled = false;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -106,6 +108,8 @@ namespace TreeView
         #region delete
         private void удалитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            richTextBox2.Text = "Удаление объекта";
+            dataGridView1.Columns.Clear();
             if (treeView1.SelectedNode == null)
                 return;
             using (var con = OpenedConnection())
@@ -132,11 +136,11 @@ namespace TreeView
 
         private void Delete_manufacture(TreeNode deletingNode, NpgsqlConnection connection)
         {
-            foreach (TreeNode tree in deletingNode.Nodes)
-            { 
-                using (var con1 = OpenedConnection())
-                    Delete_tech_object(tree, con1);
-            }
+            //foreach (TreeNode tree in deletingNode.Nodes)
+            //{ 
+            //    using (var con1 = OpenedConnection())
+            //        Delete_tech_object(tree, con1);
+            //}
             var cmd = new NpgsqlCommand("delete from manufacture where ID = @manufactureID", connection);
             cmd.Parameters.AddWithValue("@manufactureID", (int)deletingNode.Tag);
             cmd.ExecuteNonQuery();
@@ -145,11 +149,11 @@ namespace TreeView
         }
         private void Delete_tech_object(TreeNode deletingNode, NpgsqlConnection connection)
         {
-            foreach (TreeNode tree in deletingNode.Nodes)
-            {
-                using (var con1 = OpenedConnection())
-                    Delete_excavation((int)tree.Tag, con1);
-            }
+            //foreach (TreeNode tree in deletingNode.Nodes)
+            //{
+            //    using (var con1 = OpenedConnection())
+            //        Delete_excavation((int)tree.Tag, con1);
+            //}
             var cmd = new NpgsqlCommand("delete from tech_object where ID = @tech_objectID", connection);
             cmd.Parameters.AddWithValue("@tech_objectID", (int)deletingNode.Tag);
             cmd.ExecuteNonQuery();
@@ -166,6 +170,8 @@ namespace TreeView
         bool addManuf = false;
         private void добавитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            richTextBox2.Text = "Добавление объекта";
+            dataGridView1.Enabled = true;
             _update = false;
             update.Enabled = false;
             Selected_node = treeView1.SelectedNode;
@@ -188,6 +194,8 @@ namespace TreeView
         }
         private void добавитьВToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            richTextBox2.Text = "Добавление объекта";
+            dataGridView1.Enabled = true;
             _update = false;
             update.Enabled = false;
             Selected_node = treeView1.SelectedNode;
@@ -217,6 +225,7 @@ namespace TreeView
                 cmd.ExecuteNonQuery();
                 richTextBox1.Text = $"Новая запись успешно добавлена в таблицу {treeView1.SelectedNode.Text}.";
                 Refresh_tree();
+                dataGridView1.Columns.Clear();
             }
             catch
             {
@@ -238,6 +247,7 @@ namespace TreeView
                 cmd.ExecuteNonQuery();
                 richTextBox2.Text = "Новый технологический объект добавлен.";
                 Refresh_tree();
+                dataGridView1.Columns.Clear();
             }
             catch
             {
@@ -256,6 +266,7 @@ namespace TreeView
                 cmd.ExecuteNonQuery();
                 richTextBox2.Text = "Новое производство успешно добавлено.";
                 Refresh_tree();
+                dataGridView1.Columns.Clear();
             }
             catch
             {
@@ -380,6 +391,7 @@ namespace TreeView
                 cmd.ExecuteNonQuery();
                 richTextBox1.Text = $"Запись успешно обновлена {Selected_node.Text}!";
                 Hide_all();
+                dataGridView1.Columns.Clear();
             }
             catch
             {
@@ -387,7 +399,7 @@ namespace TreeView
             }
            }
         private void Update_tech_object(int selectedNode, NpgsqlConnection connection)
-        {
+        {dataGridView1.Columns.Clear();
             _update = true;
             var cmd = new NpgsqlCommand("UPDATE tech_object SET tech_object_name = @tech_object_name, " +
                 "square = @tech_object_square, id_manufacture = @id_manufacture where ID = @tech_objectID", connection);
@@ -402,6 +414,7 @@ namespace TreeView
                 cmd.ExecuteNonQuery();
                 richTextBox1.Text = $"Запись успешно обновлена {Selected_node.Text}!";
                 Hide_all();
+                dataGridView1.Columns.Clear();
 
             }
             catch
@@ -421,6 +434,7 @@ namespace TreeView
                 cmd.ExecuteNonQuery();
                 richTextBox1.Text = $"Запись успешно обновлена {Selected_node.Text}!";
                 Hide_all();
+                dataGridView1.Columns.Clear();
             }
             catch (Exception e)
             {
@@ -430,6 +444,7 @@ namespace TreeView
 
         private void обновитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            dataGridView1.Enabled = true;
             Selected_node = treeView1.SelectedNode;
             int id = (int)Selected_node.Tag;
             add.Enabled = false;
@@ -532,6 +547,10 @@ namespace TreeView
 
         private void показатьToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            richTextBox2.Text = "Показ объектов";
+            add.Enabled = false;
+            update.Enabled = false;
+            dataGridView1.Enabled = false;
             dataGridView1.Columns.Clear();
             if (treeView1.SelectedNode == null)
                 return;
